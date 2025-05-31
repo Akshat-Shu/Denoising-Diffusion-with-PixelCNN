@@ -8,12 +8,14 @@ class TimeEmbedding(nn.Module):
         self.timesteps = timesteps
         self.time_dim = time_dim
 
-        self.half_dim = embedding_dim // 2
+        self.half_dim = self.time_dim // 2
         embedding = torch.arange(0, self.time_dim, step=2, dtype=torch.float32) / self.time_dim
-        embedding = torch.exp(- embedding * torch.log(10000))
+        embedding = torch.exp(- embedding * torch.log(torch.tensor(10000)))
         time_embedding = torch.arange(0, timesteps).float()
         time_embedding = time_embedding.unsqueeze(1) * embedding.unsqueeze(0)
+        # print(f"Time embedding shape before sin/cos: {time_embedding.shape}, expected: ({timesteps}, {self.half_dim})")
         time_embedding = torch.cat((time_embedding.sin(), time_embedding.cos()), dim=1)
+        # print(f"Time embedding shape: {time_embedding.shape}, expected: ({timesteps}, {self.half_dim * 2})")
         time_embedding = time_embedding.view(timesteps, self.half_dim * 2)
 
         self.embedding = nn.Sequential(

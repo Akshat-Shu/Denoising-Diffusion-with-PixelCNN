@@ -21,4 +21,5 @@ class Config:
         self.time_embedding_dim = 256
         self.embedding_dim = 128
 
+        self.lr = 1e-4
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

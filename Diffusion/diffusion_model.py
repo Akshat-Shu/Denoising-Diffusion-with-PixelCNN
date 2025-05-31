@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
-from ..PixelCNN.config import Config
-from ..PixelCNN.model import PixelCNN
+from PixelCNN.config import Config
+from PixelCNN.model import PixelCNN
 from .time_embedding import TimeEmbedding
 from .variance import VarianceSchedule
 

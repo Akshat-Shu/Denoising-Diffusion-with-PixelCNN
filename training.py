@@ -1,4 +1,4 @@
-from Cars_Diffusion.Diffusion.variance import VarianceSchedule
+from Diffusion.variance import VarianceSchedule
 from Diffusion.time_embedding import TimeEmbedding
 import torch
 from torch import nn
@@ -6,15 +6,46 @@ from torch.optim import AdamW
 from Diffusion.diffusion_model import DiffusionModel
 
 
-def train_model(model: DiffusionModel, test_loader, train_loader, epochs, device=None):
+
+def train_step(model: DiffusionModel, batch, optimizer, criterion, device = None):
+    if device is None:
+        device = model.cfg.device
     model.train()
-    optimizer = AdamW(model.parameters(), lr=1e-4)
-    criterion = nn.MSELoss()
+    images, labels = batch
 
-    for epoch in range(epochs):
-        for batch_idx, (images, labels) in enumerate(train_loader):
-            images, labels = images.to(device), labels.to(device)
-            t = torch.randint(0, model.var.num_diffusion_timesteps, (images.size(0),), device=device)
+    images, labels = images.to(device), labels.to(device)
+    t = torch.randint(0, model.var.num_diffusion_timesteps, (images.size(0),), device=device)
 
-            epsilon = torch.randn_like(images)
-            noisy_images = model.var.
+    epsilon = torch.randn_like(images)
+    noisy_images = model.var.sqrt_alpha_bar(t) * images + \
+        model.var.sqrt_one_minus_alpha_bar(t) * epsilon
+    
+    optimizer.zero_grad()
+    predicted_noise = model((noisy_images, labels, t))
+    
+    loss = criterion(predicted_noise, epsilon)
+    loss.backward()
+
+    optimizer.step()
+
+    return loss.item()
+
+def test_step(model: DiffusionModel, batch, criterion, device = None):
+    if device is None:
+        device = model.cfg.device
+    model.eval()
+    images, labels = batch
+
+    images, labels = images.to(device), labels.to(device)
+    t = torch.randint(0, model.var.num_diffusion_timesteps, (images.size(0),), device=device)
+
+    epsilon = torch.randn_like(images)
+    noisy_images = model.var.sqrt_alpha_bar(t) * images + \
+        model.var.sqrt_one_minus_alpha_bar(t) * epsilon
+    
+    with torch.no_grad():
+        predicted_noise = model((noisy_images, labels, t))
+    
+    loss = criterion(predicted_noise, epsilon)
+
+    return loss.item()

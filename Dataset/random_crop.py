@@ -21,3 +21,7 @@ class RandomPaddedCrop:
         i = random.randint(0, img.height - th)
         j = random.randint(0, img.width - tw)
         return F.crop(img, i, j, th, tw)
+    
+
+    def __reduce__(self):
+        return (RandomPaddedCrop, (self.size,))
