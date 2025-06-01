@@ -110,8 +110,8 @@ class GatedCNNBlock(nn.Module):
         h_conv += v_link
         
         if not self.first_layer:
-            combined_embedding = self.embedding_proj(label + t)
-            h_conv += combined_embedding.unsqueeze(2).unsqueeze(3)
+            combined_embedding = self.embedding_proj(label + t).unsqueeze(2).unsqueeze(3)
+            h_conv += combined_embedding
 
         h_gated = self.gated_unit(h_conv)
         v_gated = self.gated_unit(v_conv)

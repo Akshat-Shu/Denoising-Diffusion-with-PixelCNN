@@ -32,7 +32,7 @@ class DiffusionModel(nn.Module):
 
         emb = time_emb + label_emb
 
-        output = self.pixel_cnn((images, labels, t))
+        output = self.pixel_cnn((images, label_emb, time_emb))
 
         return output, emb
     

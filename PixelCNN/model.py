@@ -14,7 +14,7 @@ class PixelCNN(nn.Module):
             out_channels=config.hidden_channels,
             kernel_height=7, kernel_width=7,
             first_layer=True, residual=False,
-            blinded=False
+            blinded=False, embedding_dim=self.cfg.embedding_dim,
         )
 
         self.hidden_layers = nn.ModuleList([
@@ -23,7 +23,8 @@ class PixelCNN(nn.Module):
                 out_channels=config.hidden_channels,
                 kernel_height=3, kernel_width=3,
                 first_layer=False, residual=True,
-                blinded=False, num_classes=config.num_classes
+                blinded=False, num_classes=config.num_classes,
+                embedding_dim=self.cfg.embedding_dim
             ) for _ in range(config.n_layers)
         ])
 

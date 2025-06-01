@@ -15,10 +15,11 @@ def train_step(model: DiffusionModel, batch, optimizer, criterion, device = None
 
     images, labels = images.to(device), labels.to(device)
     t = torch.randint(0, model.var.num_diffusion_timesteps, (images.size(0),), device=device)
+    t_reshaped = t.view(-1, 1, 1, 1)
 
     epsilon = torch.randn_like(images)
-    noisy_images = model.var.sqrt_alpha_bar(t) * images + \
-        model.var.sqrt_one_minus_alpha_bar(t) * epsilon
+    noisy_images = model.var.sqrt_alpha_bar(t_reshaped) * images + \
+        model.var.sqrt_one_minus_alpha_bar(t_reshaped) * epsilon
     
     optimizer.zero_grad()
     predicted_noise = model((noisy_images, labels, t))
@@ -39,9 +40,11 @@ def test_step(model: DiffusionModel, batch, criterion, device = None):
     images, labels = images.to(device), labels.to(device)
     t = torch.randint(0, model.var.num_diffusion_timesteps, (images.size(0),), device=device)
 
+    t_reshaped = t.view(-1, 1, 1, 1)
+
     epsilon = torch.randn_like(images)
-    noisy_images = model.var.sqrt_alpha_bar(t) * images + \
-        model.var.sqrt_one_minus_alpha_bar(t) * epsilon
+    noisy_images = model.var.sqrt_alpha_bar(t_reshaped) * images + \
+        model.var.sqrt_one_minus_alpha_bar(t_reshaped) * epsilon
     
     with torch.no_grad():
         predicted_noise = model((noisy_images, labels, t))
