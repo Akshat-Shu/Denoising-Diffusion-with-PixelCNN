@@ -28,10 +28,10 @@ class TimeEmbedding(nn.Module):
             nn.Linear(self.embedding_dim, self.embedding_dim),
         )
 
-        nn.init.xavier_uniform_(self.embedding[1].weight)
-        nn.init.xavier_uniform_(self.embedding[3].weight)
-        self.embedding[1].bias.data.fill_(0)
-        self.embedding[3].bias.data.fill_(0)
+        nn.init.xavier_uniform_(self.embedding[0].weight)
+        nn.init.xavier_uniform_(self.embedding[2].weight)
+        self.embedding[0].bias.data.fill_(0)
+        self.embedding[2].bias.data.fill_(0)
 
     def forward(self, t):
         return self.embedding(

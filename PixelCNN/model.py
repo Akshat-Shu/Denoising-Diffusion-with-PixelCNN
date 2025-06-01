@@ -50,11 +50,6 @@ class PixelCNN(nn.Module):
 
         self.relu = nn.ReLU()
 
-        self.normalize = transforms.Normalize(
-            mean=[0.5*config.color_range, 0.5*config.color_range, 0.5*config.color_range],
-            std=[0.5*config.color_range, 0.5*config.color_range, 0.5*config.color_range]
-        )
-
         self.training = True
 
     def forward(self, x):
@@ -92,10 +87,6 @@ class PixelCNN(nn.Module):
     
     def toggle_train(self):
         self.training = not self.training
-        if self.training:
-            self.normalize = transforms.Normalize(
-                mean=[0.5*self.cfg.color_range, 0.5*self.cfg.color_range, 0.5*self.cfg.color_range],
-                std=[0.5*self.cfg.color_range, 0.5*self.cfg.color_range, 0.5*self.cfg.color_range]
-            )
-        else:
-            self.normalize = transforms.ToTensor()
+    
+    def normalize(self, x):
+        return 2 * x / (self.cfg.color_range - 1) - 1
