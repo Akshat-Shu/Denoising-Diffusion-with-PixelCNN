@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from .gated_cnn import GatedCNNIO, GatedCNNBlock, MaskedCNN
 from .config import Config
+from torchvision import transforms
 
 class PixelCNN(nn.Module):
     def __init__(self, config: Config):
@@ -49,6 +50,13 @@ class PixelCNN(nn.Module):
 
         self.relu = nn.ReLU()
 
+        self.normalize = transforms.Normalize(
+            mean=[0.5*config.color_range, 0.5*config.color_range, 0.5*config.color_range],
+            std=[0.5*config.color_range, 0.5*config.color_range, 0.5*config.color_range]
+        )
+
+        self.training = True
+
     def forward(self, x):
         images, labels, t = x
         skip = torch.tensor(0) # for torchinfo
@@ -74,6 +82,20 @@ class PixelCNN(nn.Module):
 
         out = out.view(out.shape[0], self.cfg.num_channels, self.cfg.color_range, out.shape[2], out.shape[3])
         out = out.permute(0, 1, 3, 4, 2)
-        out = torch.argmax(out, dim=-1)
+        if self.training:
+            out = torch.nn.functional.gumbel_softmax(out, tau=1.0, hard=False, dim=-1)
+            out = torch.sum(out * torch.arange(self.cfg.color_range, device=out.device), dim=-1)
+        else:
+            out = torch.argmax(out, dim=-1)
 
-        return out
+        return self.normalize(out)
+    
+    def toggle_train(self):
+        self.training = not self.training
+        if self.training:
+            self.normalize = transforms.Normalize(
+                mean=[0.5*self.cfg.color_range, 0.5*self.cfg.color_range, 0.5*self.cfg.color_range],
+                std=[0.5*self.cfg.color_range, 0.5*self.cfg.color_range, 0.5*self.cfg.color_range]
+            )
+        else:
+            self.normalize = transforms.ToTensor()

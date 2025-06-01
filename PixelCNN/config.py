@@ -9,7 +9,7 @@ class Config:
         self.out_hidden_channels = 3*1024
         self.color_range = 256
 
-        self.im_size = 256
+        self.im_size = 32
         self.num_classes = 7
         self.n_layers = 12
         self.batch_size = 32

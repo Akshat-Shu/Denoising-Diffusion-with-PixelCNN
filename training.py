@@ -17,12 +17,12 @@ def train_step(model: DiffusionModel, batch, optimizer, criterion, device = None
     t = torch.randint(0, model.var.num_diffusion_timesteps, (images.size(0),), device=device)
     t_reshaped = t.view(-1, 1, 1, 1)
 
-    epsilon = torch.randn_like(images)
+    epsilon = torch.randn_like(images).detach()
     noisy_images = model.var.sqrt_alpha_bar(t_reshaped) * images + \
         model.var.sqrt_one_minus_alpha_bar(t_reshaped) * epsilon
     
     optimizer.zero_grad()
-    predicted_noise = model((noisy_images, labels, t))
+    predicted_noise, _ = model((noisy_images, labels, t))
     
     loss = criterion(predicted_noise, epsilon)
     loss.backward()
@@ -47,7 +47,7 @@ def test_step(model: DiffusionModel, batch, criterion, device = None):
         model.var.sqrt_one_minus_alpha_bar(t_reshaped) * epsilon
     
     with torch.no_grad():
-        predicted_noise = model((noisy_images, labels, t))
+        predicted_noise, _ = model((noisy_images, labels, t))
     
     loss = criterion(predicted_noise, epsilon)
 

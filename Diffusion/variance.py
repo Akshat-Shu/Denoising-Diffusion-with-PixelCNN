@@ -63,3 +63,4 @@ class VarianceSchedule:
                 raise ValueError("t must be in the range [0, num_diffusion_timesteps - 1]")
             return self.sqrt_one_minus_alphas_cumprod[t-1]
         return get
+    

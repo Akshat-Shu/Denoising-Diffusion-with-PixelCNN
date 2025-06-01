@@ -18,8 +18,11 @@ class TimeEmbedding(nn.Module):
         # print(f"Time embedding shape: {time_embedding.shape}, expected: ({timesteps}, {self.half_dim * 2})")
         time_embedding = time_embedding.view(timesteps, self.half_dim * 2)
 
+        self.time_embedding = nn.Embedding.from_pretrained(
+            time_embedding, freeze=True
+        )
+
         self.embedding = nn.Sequential(
-            nn.Embedding.from_pretrained(time_embedding, freeze=True),
             nn.Linear(self.half_dim * 2, self.embedding_dim),
             nn.GELU(),
             nn.Linear(self.embedding_dim, self.embedding_dim),
@@ -31,4 +34,6 @@ class TimeEmbedding(nn.Module):
         self.embedding[3].bias.data.fill_(0)
 
     def forward(self, t):
-        return self.embedding(t)
+        return self.embedding(
+            self.time_embedding(t)
+        )
