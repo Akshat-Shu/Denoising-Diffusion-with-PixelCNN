@@ -16,6 +16,7 @@ class PixelCNN(nn.Module):
             kernel_height=7, kernel_width=7,
             first_layer=True, residual=False,
             blinded=False, embedding_dim=self.cfg.embedding_dim,
+            device=config.device
         )
 
         self.hidden_layers = nn.ModuleList([
@@ -25,7 +26,8 @@ class PixelCNN(nn.Module):
                 kernel_height=3, kernel_width=3,
                 first_layer=False, residual=True,
                 blinded=False, num_classes=config.num_classes,
-                embedding_dim=self.cfg.embedding_dim
+                embedding_dim=self.cfg.embedding_dim,
+                device=config.device
             ) for _ in range(config.n_layers)
         ])
 
@@ -38,29 +40,35 @@ class PixelCNN(nn.Module):
             config.hidden_channels, config.out_hidden_channels,
             kernel_height=1, kernel_width=1,
             stride=1, padding='same',
-            horizontal=True, first_layer=False, blinded=False
+            horizontal=True, first_layer=False, blinded=False,
+            device=config.device
         )
 
         self.fl2 = MaskedCNN(
             config.out_hidden_channels, config.num_channels * config.color_range,
             kernel_height=1, kernel_width=1,
             stride=1, padding='same',
-            horizontal=True, first_layer=False, blinded=False
+            horizontal=True, first_layer=False, blinded=False,
+            device=config.device
         )
 
         self.relu = nn.ReLU()
 
         self.training = True
 
+        self.embedding_proj.to(config.device)
+
     def forward(self, x):
         images, labels, t = x
-        skip = torch.tensor(0) # for torchinfo
+        images, labels, t = images.to(self.cfg.device), labels.to(self.cfg.device), t.to(self.cfg.device)
+        
+        skip = torch.tensor(0) # for torchifo. 
         io = (images, images, skip, labels, t)
 
         io = self.first_layer(io)
         v, h, skip, label, t = io
 
-        skip = torch.zeros_like(h)
+        skip = torch.zeros_like(h, device=self.cfg.device)
         io = (v, h, skip, labels, t)
         for layer in self.hidden_layers:
             io = layer(io)

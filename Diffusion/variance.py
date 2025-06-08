@@ -1,9 +1,9 @@
 import torch
 
 class VarianceSchedule:
-    def __init__(self, beta_start=0.0001, beta_end=0.02, timesteps=1000):
+    def __init__(self, beta_start=0.0001, beta_end=0.02, timesteps=1000, device='cpu'):
         self.num_diffusion_timesteps = timesteps
-        self.betas = torch.linspace(beta_start, beta_end, timesteps)
+        self.betas = torch.linspace(beta_start, beta_end, timesteps, device=device)
         self.alphas = 1.0 - self.betas
         self.alphas_cumprod = torch.cumprod(self.alphas, dim=0)
         self.sqrt_alphas_cumprod = torch.sqrt(self.alphas_cumprod)

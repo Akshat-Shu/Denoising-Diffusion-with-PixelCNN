@@ -1,8 +1,8 @@
 import torch
 
-def kernel_filter(kernel_height, kernel_width, out_channels, in_channels, horizontal=False, first_layer=False, blinded=False, data_channels=1):
+def kernel_filter(kernel_height, kernel_width, out_channels, in_channels, horizontal=False, first_layer=False, blinded=False, data_channels=1, device='cpu'):
 
-    kernel_filter = torch.ones(out_channels, in_channels, kernel_height, kernel_width)
+    kernel_filter = torch.ones(out_channels, in_channels, kernel_height, kernel_width, device=device)
 
     mid_x = kernel_width // 2
     mid_y = kernel_height // 2

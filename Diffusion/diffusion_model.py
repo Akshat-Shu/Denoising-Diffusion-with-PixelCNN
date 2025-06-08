@@ -11,22 +11,27 @@ class DiffusionModel(nn.Module):
         super().__init__()
         self.cfg = Config()
         self.pixel_cnn = PixelCNN(self.cfg)
+        self.pixel_cnn.to(self.cfg.device)
 
         self.time_embedding = TimeEmbedding(
             self.cfg.time_embedding_dim, 
             self.cfg.embedding_dim,
-            self.cfg.num_timesteps
+            self.cfg.num_timesteps,
+            device=self.cfg.device
         )
+        self.time_embedding.to(self.cfg.device)
 
         self.label_embedding = nn.Embedding(
             self.cfg.num_classes,
             self.cfg.embedding_dim
         )
+        self.label_embedding.to(self.cfg.device)
 
-        self.var = VarianceSchedule()
+        self.var = VarianceSchedule(device=self.cfg.device)
 
     def forward(self, x):
         images, labels, t = x
+        images, labels, t = images.to(self.cfg.device), labels.to(self.cfg.device), t.to(self.cfg.device)
         time_emb = self.get_time_embedding(t)
         label_emb = self.get_label_embedding(labels)
 
@@ -60,11 +65,12 @@ class DiffusionModel(nn.Module):
         
         for t in range(self.cfg.num_timesteps, 0, -1):
             time_emb = self.get_time_embedding(t)
-            label_emb = self.get_label_embedding(labels)
-            
+
             epsilon = self.pixel_cnn((new_image, label_emb, time_emb))
-            z = torch.randn_like(new_image) if t > 1 else torch.zeros_like(new_image)
-            coeff = (1-self.var.alpha(t)) / self.var.sqrt_one_minus_alpha_bar(t)
+            z = torch.randn_like(new_image, device=self.cfg.device) if t > 1 else torch.zeros_like(new_image, device=self.cfg.device)
+            
+            coeff = (1-self.var.alpha(t)) / \
+            self.var.sqrt_one_minus_alpha_bar(t)
 
             new_image = (new_image - coeff * epsilon) / self.var.sqrt_alpha_bar(t) + z * self.var.variance(t)
 
