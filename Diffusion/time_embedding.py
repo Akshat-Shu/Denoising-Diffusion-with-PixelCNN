@@ -40,6 +40,7 @@ class TimeEmbedding(nn.Module):
 
     def forward(self, t):
         t = t.to(device=self.device)
+        t = t - 1
         return self.embedding(
             self.time_embedding(t)
         )

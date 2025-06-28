@@ -98,3 +98,6 @@ class PixelCNN(nn.Module):
     
     def normalize(self, x):
         return 2 * x / (self.cfg.color_range - 1) - 1
+    
+    def reverse_normalize(self, x):
+        return (x + 1) * (self.cfg.color_range - 1) / 2

@@ -14,7 +14,7 @@ def train_step(model: DiffusionModel, batch, optimizer, criterion, device = None
     images, labels = batch
 
     images, labels = images.to(device), labels.to(device)
-    t = torch.randint(0, model.var.num_diffusion_timesteps, (images.size(0),), device=device)
+    t = torch.randint(1, model.var.num_diffusion_timesteps+1, (images.size(0),), device=device)
     t_reshaped = t.view(-1, 1, 1, 1)
 
     epsilon = torch.randn_like(images).detach()
@@ -38,7 +38,7 @@ def test_step(model: DiffusionModel, batch, criterion, device = None):
     images, labels = batch
 
     images, labels = images.to(device), labels.to(device)
-    t = torch.randint(0, model.var.num_diffusion_timesteps, (images.size(0),), device=device)
+    t = torch.randint(1, model.var.num_diffusion_timesteps+1, (images.size(0),), device=device)
 
     t_reshaped = t.view(-1, 1, 1, 1)
 
